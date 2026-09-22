@@ -1,0 +1,60 @@
+SETUPEXR LIGHT BINANCE V1.4 — FUNCIONALIDADES E OPINIÃO TÉCNICA
+
+LIVRO DOS INDICADORES
+- O conteúdo de estudo foi organizado em oito capítulos dentro do app.
+- Cada capítulo possui botão próprio para leitura em áudio.
+- Inclui tendência, MMEs, RSI, KDJ, MACD, ADX, volume, ATR, candles, suportes, resistências, Fibonacci, parecer e risco.
+
+FIBONACCI
+- Calculada automaticamente com os últimos 100 candles de 15 minutos.
+- Exibe 23,6%, 38,2%, 50%, 61,8% e 78,6%.
+- Identifica a zona de ouro entre 38,2% e 61,8%.
+- Mostra extensões 127,2% e 161,8% como referências de alvo.
+- Participa da explicação em áudio do parecer.
+
+NOVO: ESTUDO TÉCNICO E PARECER FINAL
+- Explica RSI e KDJ nos tempos de 1m, 5m e 15m.
+- Analisa tendência pelas MMEs 9, 14 e 200.
+- Mostra MACD, ADX, volume em relação à média, ATR e candle atual.
+- Calcula suporte e resistência recentes no gráfico de 1 minuto.
+- Entrega parecer: viés de Long, viés de Short, preparar possível operação ou aguardar.
+- Mostra percentual de concordância dos indicadores.
+- Possui botão Ouvir parecer e botão Abrir gráfico no TradingView.
+
+O parecer é uma leitura técnica educativa. Não é ordem automática de operação.
+
+1. Monitora até duas moedas da Binance Spot nos tempos de 1, 5 e 15 minutos.
+2. Avalia RSI, KDJ, médias exponenciais 9 e 14 e volume relativo.
+3. Avisa em áudio quando houver sobrecompra ou sobrevenda máxima alinhada.
+4. Registra o histórico dos alertas e avisa quando a moeda sai da região extrema.
+5. O botão “Mais voláteis do dia” lista dez moedas com liquidez mínima de 5 milhões de USDT em 24 horas.
+6. Ao tocar no código de uma moeda do ranking, ela é inserida no monitoramento.
+7. O botão “Ouvir explicação” lê em português a orientação sobre volatilidade.
+
+QUAL INDICADOR IDENTIFICA A MOEDA MAIS VOLÁTIL?
+
+O principal indicador é o ATR percentual, ou ATR%. O ATR mede a oscilação média dos candles. Usar o valor em percentual é essencial para comparar moedas com preços diferentes. Quanto maior o ATR%, mais intensa foi a oscilação recente.
+
+O ranking do app combina:
+- 55% ATR% calculado nos candles de 15 minutos;
+- 30% amplitude entre máxima e mínima das últimas 24 horas;
+- 15% confirmação de liquidez pelo volume negociado.
+
+DICAS DE USO
+- Volatilidade não mostra direção: a moeda pode subir ou cair rapidamente.
+- Não escolha uma moeda apenas porque está em primeiro lugar no ranking.
+- Confirme tendência, volume, RSI, suporte, resistência e o candle de entrada.
+- Em moedas muito rápidas, reduza a alavancagem e ajuste o tamanho da posição.
+- Sobrecompra não é venda automática; sobrevenda não é compra automática.
+
+OPINIÃO TÉCNICA
+
+ATR% é mais útil que o ATR absoluto para comparar criptomoedas. A combinação com amplitude diária e volume reduz falsos destaques causados por moedas sem liquidez. O ranking deve ser usado para encontrar candidatas à análise, não como sinal automático de Long ou Short.
+
+ESTRATÉGIA DOS TRÊS RSI
+
+Três RSI abaixo de 30 significam sobrevenda máxima. Três RSI acima de 70 significam sobrecompra máxima. O app primeiro emite um alerta de preparação e não trata o extremo como ordem automática.
+
+O possível gatilho de compra exige RSI de 1 minuto cruzando para cima de 30, RSI de 5 minutos subindo, fechamento acima da MME 9, volume mínimo de 1,2 vez a média e preço de 15 minutos acima da MME 200. Para venda, aplica a regra inversa.
+
+O ADX de 15 minutos mostra a força da tendência. Acima de 25, a tendência é forte e operar contra ela exige maior cuidado. Abaixo de 20, o mercado está mais lateral ou com tendência fraca.
