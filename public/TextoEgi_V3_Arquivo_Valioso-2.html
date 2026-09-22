@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07101f">
+<title>TextoEgi V3</title>
+<style>
+:root{--bg:#07101f;--card:#101a2c;--line:#293a58;--txt:#eef4ff;--mut:#95a5c0;--blue:#3978e8;--ok:#25d27d;--bad:#ff6262}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui;padding:14px}.wrap{max-width:900px;margin:auto}
+h1,h2,h3{margin:0}.mut{color:var(--mut)}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin:12px 0}
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}input,textarea,select,button{font:inherit;border-radius:11px;border:1px solid #365178;background:#15243b;color:var(--txt);padding:11px}
+input,textarea,select{width:100%}textarea{min-height:170px;resize:vertical}button{cursor:pointer}button.primary{background:var(--blue)}button.danger{border-color:#7b3b45}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#0c1728;border-radius:12px;padding:10px;text-align:center}
+.note{border-top:1px solid var(--line);padding:13px 0}.note:first-child{border-top:0}.title{font-size:18px;font-weight:800}.tag{font-size:12px;background:#1a2b46;border-radius:999px;padding:4px 8px}.fav{color:#ffd15a}.excerpt{white-space:pre-wrap;color:#cbd7ea;margin:8px 0;max-height:110px;overflow:hidden}
+.actions{display:flex;gap:7px;flex-wrap:wrap}.actions button{padding:8px 10px;font-size:14px}.empty{text-align:center;padding:25px;color:var(--mut)}
+@media(max-width:620px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}body{padding:10px}.card{padding:13px}}
+</style>
+</head>
+<body><div class="wrap">
+<div class="row" style="justify-content:space-between"><div><h1>📚 TextoEgi V3</h1><div class="mut">Seu arquivo pessoal de textos valiosos</div>
+<div id="topClock" style="margin-top:5px;font-weight:700">—</div></div><button onclick="newNote()">＋ Novo</button></div>
+
+<div class="card">
+<div class="grid">
+<div><label class="mut">Título</label><input id="title" placeholder="Ex.: Avaliação técnica SetupRetornoEgi V20"></div>
+<div><label class="mut">Categoria</label><input id="cat" list="cats" placeholder="Trading, Estudos, Ideias..."><datalist id="cats"><option>Trading</option><option>Criptomoedas</option><option>Setup</option><option>Estudos</option><option>Ideias</option><option>Pessoal</option></datalist></div>
+</div>
+<label class="mut">Etiquetas</label>
+<input id="tags" placeholder="Ex.: BTC, Backtest, Importante (separe por vírgulas)">
+<label class="mut">Resumo / conclusão</label><textarea id="summary" style="min-height:90px" placeholder="A parte mais importante em poucas linhas..."></textarea>
+<label class="mut">Texto completo</label><textarea id="text" placeholder="Cole aqui o texto que deseja guardar..."></textarea>
+<div class="row">
+<button class="primary" onclick="saveNote()">💾 Salvar</button>
+<button onclick="goFirst()">⏮ Primeiro</button>
+<button onclick="goPrev()">◀ Anterior</button>
+<button onclick="goNext()">Próximo ▶</button>
+<button onclick="goLast()">Último ⏭</button>
+<button onclick="speakEditor()">🔊 Ouvir</button><button onclick="pauseAudio()">⏸ Pausar/continuar</button><button onclick="stopAudio()">⏹ Parar</button>
+<label class="mut">Velocidade <select id="rate" style="width:auto"><option>.8</option><option selected>1</option><option>1.2</option><option>1.5</option><option>2</option></select></label>
+</div>
+<div class="row" style="justify-content:space-between;margin-top:8px">
+<div id="msg" class="mut"></div><div id="position" class="mut">Nenhum texto selecionado</div>
+</div>
+</div>
+
+<div class="card">
+<div class="row"><div style="flex:1;min-width:220px"><input id="search" placeholder="🔎 Buscar título, palavra, categoria ou texto..." oninput="render()"></div>
+<select id="filter" onchange="render()" style="width:auto"><option value="all">Todos</option><option value="pinned">📌 Fixados</option><option value="fav">⭐ Favoritos</option></select>
+<select id="sort" onchange="render()" style="width:auto"><option value="recent">🕘 Recentes</option><option value="old">Mais antigos</option><option value="az">A–Z</option></select>
+</div>
+<div class="stats" style="margin-top:10px"><div class="stat"><b id="count">0</b><div class="mut">Textos</div></div><div class="stat"><b id="favCount">0</b><div class="mut">Favoritos</div></div><div class="stat"><b id="catCount">0</b><div class="mut">Categorias</div></div></div>
+</div>
+
+<div class="card"><div class="row" style="justify-content:space-between"><b>🗂️ Arquivo</b><div class="row"><button onclick="exportBackup()">⬇ Backup</button><button onclick="document.getElementById('importFile').click()">⬆ Restaurar</button><input id="importFile" type="file" accept=".json" hidden onchange="importBackup(event)"></div></div><div id="backupStatus" class="mut" style="margin:10px 0"></div><div id="list"></div></div>
+</div>
+<script>
+const KEY='TextoEgi_V1_notes'; let editId=null,paused=false;
+const $=id=>document.getElementById(id);
+function getNotes(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return[]}}
+function putNotes(a){localStorage.setItem(KEY,JSON.stringify(a))}
+function norm(s){return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
+function newNote(){editId=null;$('title').value='';$('cat').value='';$('summary').value='';$('text').value='';$('tags').value='';$('msg').textContent='Novo texto.';updatePosition();$('title').focus()}
+function saveNote(){
+ let title=$('title').value.trim(),text=$('text').value.trim(),summary=$('summary').value.trim(),cat=$('cat').value.trim()||'Sem categoria',tags=$('tags').value.trim();
+ if(!title||(!text&&!summary)){ $('msg').textContent='Informe um título e algum conteúdo.';return}
+ let a=getNotes(),now=Date.now();
+ if(editId){let n=a.find(x=>x.id===editId);if(n){n.title=title;n.text=text;n.summary=summary;n.cat=cat;n.tags=tags;n.updated=now}}
+ else{a.unshift({id:now,title,text,summary,cat,tags,fav:false,pinned:false,created:now,updated:now});editId=now}
+ putNotes(a);updatePosition();$('msg').textContent='Salvo neste aparelho em '+new Date().toLocaleTimeString('pt-BR')+'.';render()
+}
+
+function orderedNotes(){return getNotes()}
+function openByIndex(i){
+ let a=orderedNotes(); if(!a.length){newNote();return}
+ i=Math.max(0,Math.min(i,a.length-1)); editNote(a[i].id);
+ $('position').textContent=(i+1)+' de '+a.length;
+}
+function currentIndex(){
+ let a=orderedNotes(); return a.findIndex(x=>x.id===editId);
+}
+function goFirst(){openByIndex(0)}
+function goLast(){let a=orderedNotes();openByIndex(a.length-1)}
+function goPrev(){let a=orderedNotes(),i=currentIndex();if(i<0)i=0;else i=Math.max(0,i-1);openByIndex(i)}
+function goNext(){let a=orderedNotes(),i=currentIndex();if(i<0)i=0;else i=Math.min(a.length-1,i+1);openByIndex(i)}
+function updatePosition(){
+ let a=orderedNotes(),i=currentIndex();
+ $('position').textContent=i>=0?((i+1)+' de '+a.length):'Nenhum texto selecionado';
+}
+
+function editNote(id){let n=getNotes().find(x=>x.id===id);if(!n)return;editId=id;updatePosition();$('title').value=n.title;$('cat').value=n.cat;$('summary').value=n.summary||'';$('text').value=n.text||'';$('tags').value=n.tags||'';scrollTo({top:0,behavior:'smooth'})}
+function delNote(id){if(!confirm('Excluir este texto?'))return;putNotes(getNotes().filter(x=>x.id!==id));if(editId===id)newNote();render()}
+function pinNote(id){let a=getNotes(),n=a.find(x=>x.id===id);if(n)n.pinned=!n.pinned;putNotes(a);render()}
+function favNote(id){let a=getNotes(),n=a.find(x=>x.id===id);if(n)n.fav=!n.fav;putNotes(a);render()}
+function speak(t){stopAudio();let u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';u.rate=+$('rate').value;speechSynthesis.speak(u)}
+function speakEditor(){speak([$ ('title').value,$('summary').value,$('text').value].filter(Boolean).join('. '))}
+function speakNote(id){let n=getNotes().find(x=>x.id===id);if(n)speak([n.title,n.summary,n.text].filter(Boolean).join('. '))}
+function speakSummary(id){let n=getNotes().find(x=>x.id===id);if(n)speak([n.title,n.summary||n.text].filter(Boolean).join('. '))}
+function stopAudio(){speechSynthesis.cancel();paused=false}
+function pauseAudio(){if(speechSynthesis.speaking){if(speechSynthesis.paused){speechSynthesis.resume();paused=false}else{speechSynthesis.pause();paused=true}}}
+async function shareNote(id){let n=getNotes().find(x=>x.id===id);if(!n)return;let t=n.title+'\n\n'+(n.summary?('RESUMO\n'+n.summary+'\n\n'):'')+n.text;try{if(navigator.share)await navigator.share({title:n.title,text:t});else{await navigator.clipboard.writeText(t);alert('Texto copiado.')}}catch(e){}}
+
+function updateClock(){
+ let d=new Date();
+ let ds=d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+ let wd=d.toLocaleDateString('pt-BR',{weekday:'long'});
+ let tm=d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+ $('topClock').textContent=ds+' — '+wd+' — '+tm;
+}
+function updateBackupStatus(){
+ let n=getNotes().length,last=Number(localStorage.getItem('TextoEgi_lastBackup')||0);
+ if(!last){$('backupStatus').textContent=n?'⚠️ '+n+' texto(s). Nenhum backup registrado ainda.':'Nenhum texto salvo ainda.';return}
+ let days=Math.floor((Date.now()-last)/86400000);
+ $('backupStatus').textContent='🛡️ '+n+' texto(s) • Último backup: '+new Date(last).toLocaleString('pt-BR')+(days>=7?' • ⚠️ Faça um novo backup.':'');
+}
+
+function render(){
+ let a=getNotes(),q=norm($('search').value),f=$('filter').value,sort=$('sort').value;
+ if(sort==='old')a.sort((x,y)=>x.created-y.created); else if(sort==='az')a.sort((x,y)=>x.title.localeCompare(y.title,'pt-BR')); else a.sort((x,y)=>y.updated-x.updated);
+ a.sort((x,y)=>(y.pinned?1:0)-(x.pinned?1:0));
+ let cats=new Set(a.map(x=>x.cat));$('count').textContent=a.length;$('favCount').textContent=a.filter(x=>x.fav).length;$('catCount').textContent=cats.size;
+ let v=a.filter(n=>((f==='all')||(f==='fav'&&n.fav)||(f==='pinned'&&n.pinned))&&(!q||norm([n.title,n.cat,n.tags,n.summary,n.text].join(' ')).includes(q)));
+ updateBackupStatus(); let list=$('list');if(!v.length){list.innerHTML='<div class="empty">Nenhum texto encontrado.</div>';return}
+ list.innerHTML=v.map(n=>`<div class="note"><div class="row" style="justify-content:space-between"><div><span class="title">${esc(n.title)}</span> ${n.fav?'<span class="fav">★</span>':''}</div><span class="tag">${esc(n.cat)}</span></div>${n.tags?`<div class="mut" style="font-size:12px;margin-top:5px">🏷️ ${esc(n.tags)}</div>`:''}<div class="mut" style="font-size:12px">${new Date(n.updated).toLocaleString('pt-BR')}</div><div class="excerpt">${esc(n.summary||n.text)}</div><div class="actions"><button onclick="speakSummary(${n.id})">🔊 Resumo</button><button onclick="speakNote(${n.id})">🔊 Completo</button><button onclick="pinNote(${n.id})">${n.pinned?'📌 Desafixar':'📌 Fixar'}</button><button onclick="editNote(${n.id})">✏️ Editar</button><button onclick="favNote(${n.id})">${n.fav?'☆ Tirar favorito':'⭐ Favorito'}</button><button onclick="shareNote(${n.id})">↗ Compartilhar</button><button class="danger" onclick="delNote(${n.id})">🗑 Excluir</button></div></div>`).join('')
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function exportBackup(){localStorage.setItem('TextoEgi_lastBackup',Date.now());updateBackupStatus();let blob=new Blob([JSON.stringify({app:'TextoEgi V3',date:new Date().toISOString(),notes:getNotes()},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='TextoEgi_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href)}
+function importBackup(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let j=JSON.parse(r.result),notes=Array.isArray(j)?j:j.notes;if(!Array.isArray(notes))throw 0;if(confirm('Restaurar '+notes.length+' textos? Isto substituirá o arquivo atual.')){putNotes(notes);newNote();render()}}catch(x){alert('Backup inválido.')}};r.readAsText(f);e.target.value=''}
+updateClock();setInterval(updateClock,1000);render();
+</script></body></html>
